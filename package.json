@@ -1,0 +1,21 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "code by hand to make you armored",
+  "license": "ISC",
+  "author": "Mithun",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "npm test",
+    "dev": "nodemon main.js",
+    "start": "nodemon --use_strict main.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.4"
+  }
+}
