@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
       password: hashPassword,
     });
 
-    const { accessToken, refreshToke } = generateToken(user._id);
+    const { accessToken, refreshToke } = await generateToken(user._id);
 
     return res.status(201).json({
       success: true,
