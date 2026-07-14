@@ -1,6 +1,7 @@
 import User from "../model/auth.model.js";
 import generateToken from "../utils/generateToken.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
   try {
@@ -22,13 +23,13 @@ export const signup = async (req, res) => {
       password: hashPassword,
     });
 
-    const { accessToken, refreshToke } = await generateToken(user._id);
+    const { accessToken, refreshToken } = await generateToken(user._id);
 
     return res.status(201).json({
       success: true,
       message: "User registered successfully!",
       accessToken,
-      refreshToke,
+      refreshToken,
       data: {
         id: user._id,
         name,
@@ -65,15 +66,13 @@ export const login = async (req, res) => {
       });
     }
 
-    const { accessToken, refreshToke } = await generateToken(user._id);
-
-    console.log(accessToken, refreshToke, "@@@@");
+    const { accessToken, refreshToken } = await generateToken(user._id);
 
     return res.status(200).json({
       success: true,
       message: "Login successfully!",
       accessToken,
-      refreshToke,
+      refreshToken,
       data: {
         id: user._id,
         name: user.name,
@@ -96,7 +95,7 @@ export const forgetPassword = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
   res.json({
-    message: "Refresh Token API",
+    message: "Refresh token API",
   });
 };
 
