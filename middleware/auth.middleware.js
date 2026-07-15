@@ -2,7 +2,6 @@ import User from "../model/auth.model.js";
 import jwt from "jsonwebtoken";
 
 const protect = async (req, res, next) => {
-  console.log(req.headers.authorization, "token@@@");
   try {
     let token;
     if (
@@ -11,7 +10,6 @@ const protect = async (req, res, next) => {
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
-    console.log(req.headers.authorization, token, "token@@@");
     if (!token) {
       return res.status(401).json({
         success: false,
