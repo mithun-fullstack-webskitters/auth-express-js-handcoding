@@ -21,7 +21,7 @@ router.post("/signup", signupValidation, validate, signup);
 router.post("/login", loginValidation, validate, login);
 router.get("/get-profile", protect, getProfile);
 router.post("/forget-password", forgetPassword);
+router.post("/reset-password/:token", resetPassword);
 router.post("/refresh-token", refreshToken);
-router.post("/reset-password", resetPassword);
 
 export default router;
