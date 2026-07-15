@@ -106,7 +106,8 @@ export const resetPassword = async (req, res) => {
 };
 
 export const getProfile = async (req, res) => {
-  res.json({
-    message: "Profile API",
+  return res.status(200).json({
+    success: true,
+    data: req.user,
   });
 };
