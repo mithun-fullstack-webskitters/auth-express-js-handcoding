@@ -88,9 +88,22 @@ export const login = async (req, res) => {
 };
 
 export const forgetPassword = async (req, res) => {
-  res.json({
-    message: "Forget password API",
-  });
+  // try {
+  //   const { email } = req.body;
+  //   const user = await User.findOne({ email });
+  //   if (!user) {
+  //     return res.status(400).json({
+  //       success: false,
+  //       message: "User not found!",
+  //     });
+  //   }
+  //   const token = cryptop
+  // } catch (err) {
+  //   return res.status(401).json({
+  //     success: false,
+  //     message: error.message,
+  //   });
+  // }
 };
 
 export const refreshToken = async (req, res) => {
