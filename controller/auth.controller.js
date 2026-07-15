@@ -107,7 +107,7 @@ export const forgetPassword = async (req, res) => {
 
     await user.save();
 
-    const resetURL = `http://localhost:5000/api/auth/reset-password/${hashToken}`;
+    const resetURL = `http://localhost:5000/api/auth/reset-password/${resetToken}`;
 
     return res.status(200).json({
       success: true,
