@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import authRoute from "./route/auth.route.js";
 import cors from "cors";
+import errorHandler from "./middleware/error.middleware.js";
 
 connectDB();
 dotenv.config();
@@ -22,6 +23,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth/", authRoute);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
