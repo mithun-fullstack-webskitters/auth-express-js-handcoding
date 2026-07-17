@@ -6,6 +6,7 @@ import crypto from "crypto";
 import asyncHandler from "../utils/asyncHandler.js";
 import AppError from "../utils/AppError.js";
 import sendResponse from "../utils/sendResponse.js";
+import hashToken from "../utils/hashToken.js";
 
 export const signup = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -111,10 +112,12 @@ export const forgetPassword = asyncHandler(async (req, res) => {
   }
 
   const resetToken = crypto.randomBytes(32).toString("hex");
-  const hashToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
+  // const hashToken = crypto
+  //   .createHash("sha256")
+  //   .update(resetToken)
+  //   .digest("hex");
+
+  const hashToken = hashToken(resetToken);
 
   user.resetPasswordToken = hashToken;
   user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
@@ -136,7 +139,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  const hashToken = crypto.createHash("sha256").update(token).digest("hex");
+  // const hashToken = crypto.createHash("sha256").update(token).digest("hex");
+  const hashToken = hashToken(token);
 
   const user = await User.findOne({
     resetPasswordToken: hashToken,
