@@ -12,3 +12,5 @@ const generateRefreshToken = (userId) => {
     },
   );
 };
+
+export default generateRefreshToken;
