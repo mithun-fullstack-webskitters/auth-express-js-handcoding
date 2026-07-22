@@ -33,11 +33,11 @@ export const signup = asyncHandler(async (req, res) => {
   // const { accessToken, refreshToken } = await generateToken(user._id);
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
-  const hashedRefreshedToken = hashToken(user._id);
+  const hashedRefreshToken = hashToken(user._id);
 
   Session.create({
     user: user._id,
-    hashedRefreshedToken,
+    hashedRefreshToken,
     expiresAt: new Date(
       Date.now() + REFRESH_COOKIE_MAX_AGE
     )
@@ -72,11 +72,11 @@ export const login = asyncHandler(async (req, res) => {
 
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
-  const hashedRefreshedToken = hashToken(refreshToken);
+  const hashedRefreshToken = hashToken(refreshToken);
 
   await Session.create({
     user: user._id,
-    hashedRefreshedToken,
+    hashedRefreshToken,
     expiresAt: new Date(
       Date.now() + REFRESH_COOKIE_MAX_AGE
     )
@@ -160,10 +160,10 @@ export const refreshToken = async (req, res) => {
     throw new AppError("Invalid token type", 401);
   };
 
-  const hashedRefreshedToken = hashToken(refreshToken);
+  const hashedRefreshToken = hashToken(refreshToken);
 
   const session = await Session.findOne({
-    hashedRefreshedToken,
+    hashedRefreshToken,
     isRevoked: false
   }).populate("user");
   
@@ -184,7 +184,7 @@ export const refreshToken = async (req, res) => {
 
   await Session.create({
     user:session.user._id,
-    hashedRefreshedToken:newHashedToken,
+    hashedRefreshToken:newHashedToken,
     expiresAt: new Date(Date.now() + REFRESH_COOKIE_MAX_AGE)
   });
 

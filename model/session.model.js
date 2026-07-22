@@ -7,7 +7,7 @@ const sessionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    hashedRefreshedToken: {
+    hashedRefreshToken: {
       type: String,
       required: true,
     },
