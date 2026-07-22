@@ -162,25 +162,10 @@ export const refreshToken = async (req, res) => {
 
   const hashedRefreshedToken = hashToken(refreshToken);
 
-  // console.log("Incoming hash:", hashedRefreshedToken);
-
-const sessions = await Session.find();
-
-console.log(
-  sessions.map((s) => ({
-    id: s._id,
-    hashedRefreshedToken: s.hashedRefreshedToken,
-    expiresAt: s.expiresAt,
-    isRevoked: s.isRevoked,
-  }))
-);
-
   const session = await Session.findOne({
     hashedRefreshedToken,
     isRevoked: false
   }).populate("user");
-
-  // console.log('session', session,refreshToken, "++", hashedRefreshedToken);
   
 
   if(!session){
