@@ -34,11 +34,11 @@ export const signup = asyncHandler(async (req, res) => {
   // const { accessToken, refreshToken } = await generateToken(user._id);
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
-  const hashedRefreshToken = hashToken(user._id);
   const deviceInfoResult = deviceInfo(req);
 
 
-  createSession(user._id, hashedRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  // pass raw refresh token; createSession will hash it before saving
+  createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
@@ -69,7 +69,6 @@ export const login = asyncHandler(async (req, res) => {
 
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
-  const hashedRefreshToken = hashToken(refreshToken);  
 
   // await Session.create({
   //   user: user._id,
@@ -81,7 +80,8 @@ export const login = asyncHandler(async (req, res) => {
   const deviceInfoResult = deviceInfo(req);
 
 
-  createSession(user._id, hashedRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  // pass raw refresh token so createSession hashes it once
+  createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
   // createSession(user._id, hashedRefreshToken);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
@@ -167,7 +167,7 @@ export const refreshToken = async (req, res) => {
   const session = await Session.findOne({
     hashedRefreshToken,
     isRevoked: false
-  }).populate("user");
+  }).populate("user");  
   
 
   if(!session){
@@ -184,15 +184,10 @@ export const refreshToken = async (req, res) => {
 
   const newHashedToken = hashToken(newRefreshToken);
 
-  // await Session.create({
-  //   user:session.user._id,
-  //   hashedRefreshToken:newHashedToken,
-  //   expiresAt: new Date(Date.now() + REFRESH_COOKIE_MAX_AGE)
-  // });
+  // create session using raw token; createSession will hash it
   const deviceInfoResult = deviceInfo(req);
 
-
-  createSession(session.user._id, newHashedToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  createSession(session.user._id, newRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
   // createSession(user._id, hashedRefreshToken, );
   
   res.cookie("refreshToken", newRefreshToken, cookieOptions);
@@ -234,9 +229,11 @@ export const logoutAll = asyncHandler(async(req, res)=>{
 });
 
 export const getSessions = asyncHandler(async(req,res)=>{
-  const sessions = Session.find({
+  const sessions = await Session.find({
     user: req.user._id,
   }).select("-hashedRefreshToken");
+
+  
 
   return sendResponse(res, 200, "Sessions fetched", sessions)
 });
