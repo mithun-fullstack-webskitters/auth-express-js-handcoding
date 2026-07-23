@@ -223,7 +223,7 @@ export const logoutAll = asyncHandler(async(req, res)=>{
       user: req.user._id// we have make this as a mongoose.Schema.Types.ObjectId in our schema file
     });
 
-    req.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
 
     return sendResponse(res,200,"Logout from all devices")
 });
