@@ -18,15 +18,16 @@ import {
   validate,
 } from "../middleware/validate.middleware.js";
 import protect from "../middleware/auth.middleware.js";
+import { authLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
-router.post("/signup", signupValidation, validate, signup);
-router.post("/login", loginValidation, validate, login);
+router.post("/signup",authLimiter, signupValidation, validate, signup);
+router.post("/login",authLimiter, loginValidation, validate, login);
 router.get("/get-profile", protect, getProfile);
-router.post("/forget-password", forgetPassword);
+router.post("/forget-password",authLimiter, forgetPassword);
 router.post("/reset-password/:token", resetPassword);
-router.post("/refresh-token", refreshToken);
+router.post("/refresh-token",authLimiter, refreshToken);
 router.post("/logout", logout);
 router.post("/logout-all",protect, logoutAll);
 router.get("/sessions",protect, getSessions);

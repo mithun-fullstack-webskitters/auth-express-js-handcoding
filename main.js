@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import authRoute from "./route/auth.route.js";
 import cors from "cors";
 import errorHandler from "./middleware/error.middleware.js";
+import helmet from "helmet"
 
 connectDB();
 dotenv.config();
@@ -13,7 +14,20 @@ const app = express();
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credential: true,
+  methods:[
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE'
+  ],
+  allowedHeaders:[
+    "Content-type",
+    "Authorization"
+  ]
 }));
+
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
