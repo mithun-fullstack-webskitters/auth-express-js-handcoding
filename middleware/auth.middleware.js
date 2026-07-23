@@ -13,7 +13,7 @@ const protect = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Access denied. Toke not found.",
+        message: "Access denied. Token not found.",
       });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

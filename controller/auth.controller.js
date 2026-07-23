@@ -69,10 +69,7 @@ export const login = asyncHandler(async (req, res) => {
 
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
-  const hashedRefreshToken = hashToken(refreshToken);
-
-  console.log(hashedRefreshToken, "@@");
-  
+  const hashedRefreshToken = hashToken(refreshToken);  
 
   // await Session.create({
   //   user: user._id,

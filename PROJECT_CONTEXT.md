@@ -222,7 +222,7 @@ Authorization: Bearer <access-token>
 The exact Mongoose serialization can vary. The middleware does not restrict the JWT `type` claim to `access`, so a valid refresh JWT signed with the same secret may also pass this check.
 
 - Common failures:
-  - HTTP 401 if the header/token is absent (`Access denied. Toke not found.` includes the current typo)
+  - HTTP 401 if the header/token is absent (`Access denied. Token not found.` includes the current typo)
   - HTTP 401 with the JWT library error message for an invalid or expired token
 
 ### `POST /api/auth/forget-password`

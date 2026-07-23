@@ -5,7 +5,7 @@ import { REFRESH_COOKIE_MAX_AGE } from "./utils.js";
 const createSession = (userId, refreshToken, device = "Unknown Device", browser = "Unknown Browser", ipAddress = "") => {
     return Session.create({
         user: userId,
-        hashRefreshToken: hashToken(refreshToken),
+        hashedRefreshToken: hashToken(refreshToken),
         device,
         browser,
         ipAddress,
