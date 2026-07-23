@@ -10,8 +10,9 @@ import Session from "../model/session.model.js"
 import generateAccessToke from "../utils/generateAccessToken.js"
 import generateRefreshToken from "../utils/generateRefreshToken.js"
 import cookieOptions from "../utils/cookieOptions.js";
-import { REFRESH_COOKIE_MAX_AGE } from "../utils/utils.js";
 import generateAccessToken from "../utils/generateAccessToken.js";
+import createSession from "../utils/createSession.js";
+import deviceInfo from "../utils/findDevice.js";
 
 
 export const signup = asyncHandler(async (req, res) => {
@@ -34,14 +35,10 @@ export const signup = asyncHandler(async (req, res) => {
   const accessToken = generateAccessToke(user._id);
   const refreshToken = generateRefreshToken(user._id);
   const hashedRefreshToken = hashToken(user._id);
+  const deviceInfoResult = deviceInfo(req);
 
-  Session.create({
-    user: user._id,
-    hashedRefreshToken,
-    expiresAt: new Date(
-      Date.now() + REFRESH_COOKIE_MAX_AGE
-    )
-  });
+
+  createSession(user._id, hashedRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
@@ -74,13 +71,21 @@ export const login = asyncHandler(async (req, res) => {
   const refreshToken = generateRefreshToken(user._id);
   const hashedRefreshToken = hashToken(refreshToken);
 
-  await Session.create({
-    user: user._id,
-    hashedRefreshToken,
-    expiresAt: new Date(
-      Date.now() + REFRESH_COOKIE_MAX_AGE
-    )
-  });
+  console.log(hashedRefreshToken, "@@");
+  
+
+  // await Session.create({
+  //   user: user._id,
+  //   hashedRefreshToken,
+  //   expiresAt: new Date(
+  //     Date.now() + REFRESH_COOKIE_MAX_AGE
+  //   )
+  // });
+  const deviceInfoResult = deviceInfo(req);
+
+
+  createSession(user._id, hashedRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  // createSession(user._id, hashedRefreshToken);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
@@ -103,9 +108,9 @@ export const forgetPassword = asyncHandler(async (req, res) => {
 
   const resetToken = crypto.randomBytes(32).toString("hex");
 
-  const hashToken = hashToken(resetToken);
+  const hashedToken = hashToken(resetToken);
 
-  user.resetPasswordToken = hashToken;
+  user.resetPasswordToken = hashedToken;
   user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
   await user.save();
@@ -182,15 +187,17 @@ export const refreshToken = async (req, res) => {
 
   const newHashedToken = hashToken(newRefreshToken);
 
-  await Session.create({
-    user:session.user._id,
-    hashedRefreshToken:newHashedToken,
-    expiresAt: new Date(Date.now() + REFRESH_COOKIE_MAX_AGE)
-  });
+  // await Session.create({
+  //   user:session.user._id,
+  //   hashedRefreshToken:newHashedToken,
+  //   expiresAt: new Date(Date.now() + REFRESH_COOKIE_MAX_AGE)
+  // });
+  const deviceInfoResult = deviceInfo(req);
 
-  console.log('newAccessToken', newAccessToken, newRefreshToken);
+
+  createSession(session.user._id, newHashedToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  // createSession(user._id, hashedRefreshToken, );
   
-
   res.cookie("refreshToken", newRefreshToken, cookieOptions);
 
   return sendResponse(
@@ -202,3 +209,54 @@ export const refreshToken = async (req, res) => {
     }
   )
 };
+
+export const logout = asyncHandler(async (req,res)=>{
+  const {refreshToken} = req.cookies;
+
+  if(refreshToken){
+    const hashedToken = hashToken(refreshToken);
+
+    await Session.findOneAndDelete({
+      hashedRefreshToken: hashedToken
+    })
+  };
+
+  res.clearCookie("refreshToken", cookieOptions);
+
+  return sendResponse(res, 200, "Logged out successfully!")
+});
+
+export const logoutAll = asyncHandler(async(req, res)=>{
+    await Session.deleteMany({
+      user: req.user._id// we have make this as a mongoose.Schema.Types.ObjectId in our schema file
+    });
+
+    req.clearCookie("refreshToken", cookieOptions);
+
+    return sendResponse(res,200,"Logout from all devices")
+});
+
+export const getSessions = asyncHandler(async(req,res)=>{
+  const sessions = Session.find({
+    user: req.user._id,
+  }).select("-hashedRefreshToken");
+
+  return sendResponse(res, 200, "Sessions fetched", sessions)
+});
+
+//Logout one device
+export const revokeSession = asyncHandler(async (req, res) => {
+  const {sessionId} = req.params;
+  const session = await Session.findOne({
+    _id: sessionId,
+    user: req.user._id
+  });
+
+  if(!session){
+    throw new AppError("Session not found!", 404);
+  };
+
+  await session.deleteOne();
+
+  return sendResponse(res, 200, "Session revoked");
+})
