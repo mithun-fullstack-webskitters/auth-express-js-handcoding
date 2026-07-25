@@ -1,3 +1,5 @@
+import AppError from "../utils/AppError.js";
+
 const authorize =(...role)=>{
     return (req,res,next)=>{
         if(!role.includes(req.user.role)){

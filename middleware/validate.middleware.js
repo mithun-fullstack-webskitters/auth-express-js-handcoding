@@ -3,7 +3,11 @@ import { body, validationResult } from "express-validator";
 export const signupValidation = [
   body("name").trim().notEmpty().withMessage("Name is required!"),
   body("email").trim().isEmail().withMessage("Enter a valid email!"),
-  body("password").isLength({ min: 6 }).withMessage("Password is required"),
+  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  body("role")
+    .optional()
+    .isIn(["user", "admin", "manager", "moderator"])
+    .withMessage("Invalid role"),
 ];
 
 export const loginValidation = [

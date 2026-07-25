@@ -7,7 +7,6 @@ import AppError from "../utils/AppError.js";
 import sendResponse from "../utils/sendResponse.js";
 import hashToken from "../utils/hashToken.js";
 import Session from "../model/session.model.js"
-import generateAccessToke from "../utils/generateAccessToken.js"
 import generateRefreshToken from "../utils/generateRefreshToken.js"
 import cookieOptions from "../utils/cookieOptions.js";
 import generateAccessToken from "../utils/generateAccessToken.js";
@@ -33,13 +32,13 @@ export const signup = asyncHandler(async (req, res) => {
   });
 
   // const { accessToken, refreshToken } = await generateToken(user._id);
-  const accessToken = generateAccessToke(user._id);
+  const accessToken = generateAccessToken(user._id, user.role);
   const refreshToken = generateRefreshToken(user._id);
   const deviceInfoResult = deviceInfo(req);
 
 
   // pass raw refresh token; createSession will hash it before saving
-  createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  await createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
 
@@ -49,6 +48,7 @@ export const signup = asyncHandler(async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
     },
   });
 });
@@ -62,13 +62,13 @@ export const login = asyncHandler(async (req, res) => {
     throw new AppError("Invalid email or Password!", 401);
   }
 
-  const isMatch = bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const accessToken = generateAccessToke(user._id);
+  const accessToken = generateAccessToken(user._id, user.role);
   const refreshToken = generateRefreshToken(user._id);
 
   // await Session.create({
@@ -82,7 +82,7 @@ export const login = asyncHandler(async (req, res) => {
 
 
   // pass raw refresh token so createSession hashes it once
-  createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  await createSession(user._id, refreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
   // createSession(user._id, hashedRefreshToken);
 
   res.cookie("refreshToken", refreshToken, cookieOptions);
@@ -93,6 +93,7 @@ export const login = asyncHandler(async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
     },
   });
 });
@@ -122,10 +123,10 @@ export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  const hashToken = hashToken(token);
+  const hashedResetToken = hashToken(token);
 
   const user = await User.findOne({
-    resetPasswordToken: hashToken,
+    resetPasswordToken: hashedResetToken,
     resetPasswordExpire: { $gt: Date.now() },
   });
 
@@ -150,7 +151,7 @@ export const getProfile = async (req, res) => {
   });
 };
 
-export const refreshToken = async (req, res) => {
+export const refreshToken = asyncHandler(async (req, res) => {
   const {refreshToken} = req.cookies;
 
   if(!refreshToken){
@@ -180,15 +181,13 @@ export const refreshToken = async (req, res) => {
     throw new AppError("User not found", 401);
 }
 
-  const newAccessToken = generateAccessToken(session.user._id);
+  const newAccessToken = generateAccessToken(session.user._id, session.user.role);
   const newRefreshToken = generateRefreshToken(session.user._id);
-
-  const newHashedToken = hashToken(newRefreshToken);
 
   // create session using raw token; createSession will hash it
   const deviceInfoResult = deviceInfo(req);
 
-  createSession(session.user._id, newRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
+  await createSession(session.user._id, newRefreshToken, deviceInfoResult.device.type || "Desktop", deviceInfoResult.browser.name, req.ip);
   // createSession(user._id, hashedRefreshToken, );
   
   res.cookie("refreshToken", newRefreshToken, cookieOptions);
@@ -201,7 +200,7 @@ export const refreshToken = async (req, res) => {
       accessToken: newAccessToken
     }
   )
-};
+});
 
 export const logout = asyncHandler(async (req,res)=>{
   const {refreshToken} = req.cookies;
