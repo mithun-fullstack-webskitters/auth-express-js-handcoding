@@ -1,4 +1,4 @@
-import { REFRESH_COOKIE_MAX_AGE } from "./utils";
+import { REFRESH_COOKIE_MAX_AGE } from "./utils.js";
 
 const cookieOptions = {
     httpOnly: true,

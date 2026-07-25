@@ -19,6 +19,7 @@ import {
 } from "../middleware/validate.middleware.js";
 import protect from "../middleware/auth.middleware.js";
 import { authLimiter } from "../middleware/rateLimit.middleware.js";
+import authorize from "../middleware/authorize.middleware.js";
 
 const router = express.Router();
 
@@ -31,6 +32,6 @@ router.post("/refresh-token",authLimiter, refreshToken);
 router.post("/logout", logout);
 router.post("/logout-all",protect, logoutAll);
 router.get("/sessions",protect, getSessions);
-router.delete("/sessions/:sessionId",protect, revokeSession);
+router.delete("/sessions/:sessionId",protect,authorize("admin", "manager"),revokeSession);
 
 export default router;

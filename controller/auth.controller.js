@@ -16,7 +16,7 @@ import deviceInfo from "../utils/findDevice.js";
 
 
 export const signup = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const userExist = await User.findOne({ email });
 
   if (userExist) {
@@ -29,6 +29,7 @@ export const signup = asyncHandler(async (req, res) => {
     name,
     email,
     password: hashPassword,
+    role
   });
 
   // const { accessToken, refreshToken } = await generateToken(user._id);
